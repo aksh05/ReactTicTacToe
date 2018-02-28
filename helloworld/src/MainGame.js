@@ -61,57 +61,49 @@ class Game extends React.Component{
                 squares: Array(9).fill(""),
             }],
             xIsNext: true,
-            
+            stepNumber: 0,
         }
     }
    
     handleClick(i){
 
-        const history = this.state.history;
-        const currentState = history[history.length-1];
+        const history = this.state.history.slice(0, this.state.stepNumber+1);
+        const currentState = history[history.length - 1];
         const squares = currentState.squares.slice();
 
-        if(calculateWinner(squares)){
+        if(calculateWinner(squares) || squares[i]){
             return;
         }
 
         if(!squares[i]){
             squares[i] = this.state.xIsNext?'X':'O';
-           history.push({squares: squares});
+          
             this.setState({
-                history: this.state.history.concat(history),
+                history: history.concat([{squares: squares}]),
                 xIsNext: !this.state.xIsNext,
+                stepNumber: history.length
             });
         }
     }
     
 
-    reset(){
-        this.setState({
-                history: [{
-                    squares: Array(9).fill(""),
-                }],
-                xIsNext: !this.state.xIsNext,
-            });
-    }
     
-    gotoState(i){
-
-    }
 
     render(){
         const history = this.state.history;
-        const current = history[history.length - 1];
+        const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
         
-        const moves = history.map(function(step, move){
-            const stateInfo = move? "Gor to move "+move: "Go to start of the game";
+        
+        const moves = history.map((step, move)=>{
+           
+            const stateInfo = move? "Go to move "+move: "Go to start of the game";
 
             return (
-                <li>
-                    <a class="game-state">{stateInfo}</a>
+                <li key={move}>
+                  <a className="game-state" onClick={()=>this.gotoState(move)}>{stateInfo}</a>
                 </li>
-            );
+              );
         });
 
         let status;
@@ -138,6 +130,23 @@ class Game extends React.Component{
 
             </div>
         </div>
+    }
+
+    reset(){
+        this.setState({
+                history: [{
+                    squares: Array(9).fill(""),
+                }],
+                xIsNext: true,
+                stepNumber: 0,
+            });
+    }
+    
+    gotoState(i){
+        this.setState({
+            stepNumber: i,
+            xIsNext: i%2===0,
+        });
     }
 }
 
